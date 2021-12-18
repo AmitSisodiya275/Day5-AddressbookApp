@@ -9,5 +9,4 @@ public class Day5AddressBookApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(Day5AddressBookApplication.class, args);
 	}
-
 }
