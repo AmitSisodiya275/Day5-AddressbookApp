@@ -1,5 +1,8 @@
 package com.bridgelab.addressbook.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -7,35 +10,58 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.bridgelab.addressbook.convertor.EntityToDTOConvertor;
+import com.bridgelab.addressbook.dto.PersonDTO;
+import com.bridgelab.addressbook.model.Person;
+import com.bridgelab.addressbook.service.PersonService;
 
 @RestController
 @RequestMapping("/addressbook")
 public class Controller {
 
+	@Autowired
+	PersonService personService;
+
+	@Autowired
+	EntityToDTOConvertor convertor;
+
 	@GetMapping("/get")
-	public ResponseEntity<String> getAllUser() {
-		return new ResponseEntity<String>("Get call for all user successful.", HttpStatus.NO_CONTENT);
+	public ResponseEntity<List<PersonDTO>> getAllPerson() {
+		List<Person> allPerson = personService.getAllPerson();
+		List<PersonDTO> dtoList = convertor.entityToDTO(allPerson);
+		return new ResponseEntity<List<PersonDTO>>(dtoList, HttpStatus.OK);
 	}
 
 	@GetMapping("/get/{eId}")
-	public ResponseEntity<String> geUserById(@PathVariable("eId") int eId) {
-		return new ResponseEntity<String>("Get call for specific id is successful id : " + eId, HttpStatus.OK);
+	public ResponseEntity<PersonDTO> gePersonById(@PathVariable("eId") int eId) {
+		Person person = personService.getPersonById(eId);
+		PersonDTO personDTO = convertor.entityToDTO(person);
+		return new ResponseEntity<PersonDTO>(personDTO, HttpStatus.OK);
 	}
 
 	@PostMapping("/add")
-	public ResponseEntity<String> addUser() {
-		return new ResponseEntity<String>("Post call successful ", HttpStatus.OK);
+	public ResponseEntity<PersonDTO> addPerson(@RequestBody PersonDTO personDTO) {
+		Person person = convertor.dtoToEntity(personDTO);
+		Person savedPerson = personService.savePerson(person);
+		PersonDTO persondto = convertor.entityToDTO(savedPerson);
+		return new ResponseEntity<PersonDTO>(persondto, HttpStatus.ACCEPTED);
 	}
 
 	@PutMapping("/update/{id}")
-	public ResponseEntity<String> updateUser(@PathVariable("id") int id) {
-		return new ResponseEntity<String>("data updated for id : " + id, HttpStatus.OK);
+	public ResponseEntity<PersonDTO> updatePerson(@PathVariable("id") int id, @RequestBody PersonDTO personDto) {
+		Person person = convertor.dtoToEntity(personDto);
+		Person updatedPerson = personService.updatePerson(id, person);
+		PersonDTO persondto = convertor.entityToDTO(updatedPerson);
+		return new ResponseEntity<PersonDTO>(persondto, HttpStatus.ACCEPTED);
 	}
 
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteUser(@PathVariable("id") int id) {
+	public ResponseEntity<String> deletePerson(@PathVariable("id") int id) {
+		personService.deletePerson(id);
 		return new ResponseEntity<String>("Data deleted for id : " + id, HttpStatus.OK);
 	}
 }
